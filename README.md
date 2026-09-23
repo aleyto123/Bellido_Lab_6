@@ -25,6 +25,7 @@ El acceso solo se autoriza cuando ambas capas permiten la operación. Cada solic
 ## Arquitectura
 
 El diagrama completo de arquitectura y el flujo de autorización se encuentra en [ARQUITECTURA.md](ARQUITECTURA.md).
+El modelo entidad-relación y la descripción de las tablas se encuentra en [MODELO_DATOS.md](MODELO_DATOS.md).
 
 ```text
 Frontend React
