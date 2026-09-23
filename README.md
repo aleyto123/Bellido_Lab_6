@@ -24,6 +24,8 @@ El acceso solo se autoriza cuando ambas capas permiten la operación. Cada solic
 
 ## Arquitectura
 
+El diagrama completo de arquitectura y el flujo de autorización se encuentra en [ARQUITECTURA.md](ARQUITECTURA.md).
+
 ```text
 Frontend React
    |
