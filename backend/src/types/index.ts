@@ -1,27 +1,28 @@
 // Roles del sistema
-export type RoleName = 
-  | 'ADMINISTRADOR' 
-  | 'GERENTE' 
-  | 'SUPERVISOR' 
-  | 'EMPLEADO' 
-  | 'AUDITOR' 
+export type RoleName =
+  | 'ADMINISTRADOR'
+  | 'GERENTE'
+  | 'SUPERVISOR'
+  | 'EMPLEADO'
+  | 'AUDITOR'
   | 'INVITADO';
 
 // Acciones sobre recursos
-export type ActionType = 
-  | 'CREATE' 
-  | 'READ' 
-  | 'UPDATE' 
-  | 'DELETE' 
+export type ActionType =
+  | 'CREATE'
+  | 'READ'
+  | 'UPDATE'
+  | 'DELETE'
   | 'APPROVE';
 
 // Atributos del Usuario (Subject)
 export interface UserSubject {
   id: number;
   nombre: string;
+  email?: string;
   rol: RoleName;
   departamento: string;
-  nivel_seguridad: number; // 1 a 5
+  nivel_seguridad: number;
   pais: string;
   tipo_contrato: 'INTERNO' | 'EXTERNO';
   estado: 'ACTIVO' | 'INACTIVO';
@@ -31,8 +32,10 @@ export interface UserSubject {
 export interface DocumentResource {
   id: number;
   titulo: string;
+  descripcion?: string;
+  fecha_creacion?: string;
   departamento: string;
-  nivel_confidencialidad: number; // 1 a 5
+  nivel_confidencialidad: number;
   estado: 'PENDIENTE' | 'PUBLICADO' | 'RECHAZADO';
   pais: string;
   propietario_id: number;
@@ -40,7 +43,7 @@ export interface DocumentResource {
 
 // Atributos del Entorno (Environment)
 export interface EnvironmentContext {
-  hora: string;          // Formato "HH:MM", ej: "11:30"
+  hora: string;
   direccion_ip: string;
   pais: string;
   dispositivo: 'CORPORATIVO' | 'PERSONAL';

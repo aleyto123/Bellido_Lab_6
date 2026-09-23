@@ -3,26 +3,27 @@ import { authenticateToken } from '../middlewares/auth.middleware';
 import { checkRBAC } from '../middlewares/rbac.middleware';
 import { checkABAC } from '../middlewares/abac.middleware';
 import { auditLogger } from '../middlewares/audit.middleware';
-import { 
-  getDocumentos, 
-  crearDocumento, 
-  modificarDocumento, 
-  eliminarDocumento, 
-  aprobarDocumento 
+import {
+  getDocumentos,
+  getDocumentoById,
+  crearDocumento,
+  modificarDocumento,
+  eliminarDocumento,
+  aprobarDocumento
 } from '../controllers/document.controller';
 
 const router = Router();
 
-router.use(authenticateToken);
 router.use(auditLogger);
+router.use(authenticateToken);
 
-// Consultar (RBAC + ABAC)
 router.get('/', checkRBAC('DOC_READ'), checkABAC, getDocumentos);
+router.get('/:id', checkRBAC('DOC_READ'), checkABAC, getDocumentoById);
 
-// Operaciones CRUD + Aprobar
-router.post('/', checkRBAC('DOC_CREATE'), crearDocumento);
-router.put('/:id', checkRBAC('DOC_UPDATE'), modificarDocumento);
-router.delete('/:id', checkRBAC('DOC_DELETE'), eliminarDocumento);
-router.patch('/:id/aprobar', checkRBAC('DOC_UPDATE'), aprobarDocumento);
+router.post('/', checkRBAC('DOC_CREATE'), checkABAC, crearDocumento);
+router.put('/:id', checkRBAC('DOC_UPDATE'), checkABAC, modificarDocumento);
+router.delete('/:id', checkRBAC('DOC_DELETE'), checkABAC, eliminarDocumento);
+router.post('/:id/aprobar', checkRBAC('DOC_APPROVE'), checkABAC, aprobarDocumento);
+router.patch('/:id/aprobar', checkRBAC('DOC_APPROVE'), checkABAC, aprobarDocumento);
 
 export default router;

@@ -1,18 +1,45 @@
-# 🛡️ Sistema de Gestión Documental Seguro (RBAC + ABAC)
+# SecureDocs: Control de acceso RBAC + ABAC
 
-Este proyecto es una API RESTful desarrollada para la evaluación e implementación de modelos de control de acceso híbridos (**RBAC** y **ABAC**) sobre recursos documentales sensibles.
+SecureDocs es un sistema de gestión de documentos internos para TechCorp. Su autorización se evalúa en dos capas:
 
-> **Estado del Proyecto:** 🟡 *MVP en Desarrollo / Prototipo Funcional*
+1. **RBAC:** determina si el rol posee el permiso base para ejecutar una operación.
+2. **ABAC:** valida los atributos del usuario, documento y entorno de la petición.
+
+El acceso solo se autoriza cuando ambas capas permiten la operación. Cada solicitud protegida genera un registro de auditoría.
+
+> **Estado:** prototipo funcional para laboratorio universitario de Cloud Security.
 
 ---
 
 ## 🚀 Tecnologías Utilizadas
 
-* **Lenguaje:** Node.js, TypeScript
-* **Framework Web:** Express.js
-* **Autenticación:** JWT (JSON Web Tokens) & Bcrypt
-* **Base de Datos:** PostgreSQL / SQLite (driver de prueba)
-* **Cliente API:** Thunder Client / Postman
+* **Backend:** Node.js, TypeScript y Express.js
+* **Frontend:** React, Vite, TypeScript, Tailwind CSS, Zustand, Axios, Lucide React y Framer Motion
+* **Autenticación:** JWT y Bcrypt
+* **Base de datos local:** SQLite mediante `sqlite3` y `sqlite`
+* **Cliente API:** navegador, Thunder Client o Postman
+
+## Arquitectura
+
+```text
+Frontend React
+   |
+   | Axios + JWT + contexto ABAC
+   v
+API REST Express
+   |
+   +-- Autenticación JWT
+   +-- Middleware RBAC
+   +-- Motor de políticas ABAC
+   +-- Servicio de documentos
+   +-- Servicio de usuarios
+   +-- Auditoría
+   |
+   v
+SQLite
+```
+
+El backend se encuentra en `backend/src` y el frontend en `frontend/src`.
 
 ---
 
@@ -25,69 +52,142 @@ Este proyecto es una API RESTful desarrollada para la evaluación e implementaci
    * Contextualiza la decisión evaluando atributos en tiempo de ejecución:
      * **Sujeto:** Departamento, Nivel de Seguridad, Estado (`ACTIVO`), País.
      * **Objeto/Recurso:** Departamento destino, Nivel de Confidencialidad, País.
-     * **Entorno:** Dirección IP, Timestamp de la solicitud.
+   * **Entorno:** Hora, país, dirección IP y dispositivo.
+
+### Políticas ABAC
+
+Las políticas están centralizadas en `backend/src/policies/rules.ts` y son evaluadas por `ABACEngine`:
+
+| Código | Política | Regla principal |
+|---|---|---|
+| POL_001 | Departamento | El usuario y el documento pertenecen al mismo departamento, salvo roles autorizados. |
+| POL_002 | Nivel de seguridad | `nivel_seguridad >= nivel_confidencialidad`. |
+| POL_003 | Propiedad | Para modificar, el usuario debe ser propietario, salvo Administrador o Gerente. |
+| POL_004 | Horario | Documentos nivel 4 o 5 solo se consultan entre 08:00 y 18:00. |
+| POL_005 | País | El país del usuario, entorno y documento debe coincidir. |
+| POL_006 | Dispositivo | Documentos nivel 4 o 5 requieren dispositivo `CORPORATIVO`. |
+| POL_007 | Estado | Solo usuarios `ACTIVO` pueden autenticarse y acceder. |
+| POL_008 | Invitados | Contrato `EXTERNO`, nivel máximo 1 y documento `PUBLICADO`. |
 
 ---
 
-## ✅ Funcionalidades Implementadas (Completadas)
+## Funcionalidades implementadas
 
-- [x] **Módulo de Autenticación:**
-  - Login con hashing y generación de firma JWT con payload de atributos.
-  - Middleware de verificación de Token Bearer (`authenticateToken`).
-- [x] **Motor de Políticas Híbrido:**
-  - Middleware de validación RBAC por permisos explícitos (`checkRBAC`).
-  - Middleware de evaluación situacional ABAC (`checkABAC`).
-- [x] **Casos de Uso de Prueba (Matriz de Decisiones):**
-  - **Caso Autorizado (200 OK):** Supervisor de Finanzas accediendo a documentos de su área.
-  - **Caso Denegado por ABAC (403 Forbidden):** Empleado de RRHH bloqueado al intentar acceder a documentos de Finanzas.
-- [x] **Módulo de Auditoría Básico:**
-  - Trazabilidad de decisiones `PERMITIDO` / `DENEGADO` guardadas con contexto de IP y motivo.
+* Login y logout con JWT revocable durante la ejecución.
+* CRUD de documentos y flujo de aprobación.
+* Gestión administrativa de usuarios, roles, departamentos, nivel de seguridad y estado.
+* Middleware independiente para autenticación, RBAC, ABAC y auditoría.
+* Frontend con quick login para los seis roles, dashboard, documentos, usuarios, auditoría y Test Suite.
+* Simulador ABAC que inyecta `x-country`, `x-device`, `x-time` y `x-forwarded-for`.
 
----
+## Instalación y ejecución
 
-## 🚧 Funcionalidades Pendientes / Próximos Pasos (Roadmap)
+### Requisitos
 
-### 📌 Módulo de Usuarios
-- [ ] Implementar endpoint de registro administrativo de usuarios (`POST /api/usuarios`).
-- [ ] Endpoint para actualización de perfil, rol y departamento (`PUT /api/usuarios/:id`).
-- [ ] Control de estado para activación/desactivación manual de cuentas (`PATCH /api/usuarios/:id/estado`).
+* Node.js 20 o superior
+* npm
 
-### 📌 Módulo de Documentos (CRUD Completo)
-- [ ] Endpoint para subida/creación de documentos (`POST /api/documentos`).
-- [ ] Endpoint para modificación de confidencialidad (`PUT /api/documentos/:id`).
-- [ ] Endpoint para borrado lógico/físico de archivos (`DELETE /api/documentos/:id`).
-- [ ] Flujo de aprobación para cambio de estado de `PENDIENTE` a `PUBLICADO` (`PATCH /api/documentos/:id/aprobar`).
+### Backend
 
-### 📌 Módulo de Autenticación y Seguridad Avanzada
-- [ ] Endpoint explícito para invalidez de sesión / Logout (`POST /api/auth/logout`).
-- [ ] Implementación de Blacklist/Revocación de JWTs o Tokens de Refresco (Refresh Tokens).
-- [ ] Refactorización de persistencia a migración estricta PostgreSQL mediante ORM (Prisma / TypeORM).
+```powershell
+cd backend
+npm install
+npm run seed
+npm run dev
+```
 
-### 📌 Frontend / Interfaz de Usuario
-- [ ] Desarrollo de UI en React/HTML+Bootstrap para visualización de documentos según rol y estado.
-- [ ] Panel interactivo de lectura de logs de Auditoría.
+La API queda disponible en `http://localhost:4000`.
 
----
+> `npm run seed` reinicia la base local `backend/database.sqlite` con los usuarios, roles, permisos y documentos de demostración.
 
-## 🛠️ Guía de Instalación y Ejecución Local
+### Frontend
 
-1. **Clonar repositorio:**
-   ```bash
-   git clone <URL_DE_TU_REPOSITY>
-   cd <NOMBRE_CARPETA>
-   ```
+En otra terminal:
 
-2. **Instalar dependencias:**
-   ```bash
-   npm install
-   ```
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-3. **Inicializar esquema de base de datos de prueba:**
-   ```bash
-   npx tsx src/initDb.ts
-   ```
+La interfaz queda disponible en `http://localhost:5173` y consume `http://localhost:4000/api`.
 
-4. **Levantar el servidor en modo desarrollo:**
-   ```bash
-   npx tsx src/app.ts
-   ```
+Para utilizar otro puerto de backend:
+
+```powershell
+$env:VITE_API_URL = "http://localhost:4001/api"
+npm run dev
+```
+
+Para crear el build de producción:
+
+```powershell
+npm run build
+```
+
+## Usuarios de demostración
+
+Todas las cuentas de seed usan la contraseña `123`:
+
+| Rol | Correo | Departamento | Nivel |
+|---|---|---|---:|
+| Administrador | `admin@securedocs.com` | SISTEMAS | 5 |
+| Gerente | `gerente@securedocs.com` | FINANZAS | 4 |
+| Supervisor | `carlos.ruiz@securedocs.com` | FINANZAS | 3 |
+| Empleado | `maria.rrhh@securedocs.com` | RRHH | 2 |
+| Auditor | `auditor@securedocs.com` | SISTEMAS | 3 |
+| Invitado | `invitado@securedocs.com` | SISTEMAS | 1 |
+
+## API principal
+
+| Método | Endpoint | Autorización |
+|---|---|---|
+| POST | `/api/auth/login` | Pública |
+| POST | `/api/auth/logout` | JWT |
+| GET | `/api/usuarios` | RBAC `USER_READ` |
+| POST | `/api/usuarios` | RBAC `USER_CREATE` |
+| PUT | `/api/usuarios/:id` | RBAC `USER_UPDATE` |
+| PATCH | `/api/usuarios/:id/estado` | RBAC `USER_UPDATE` |
+| GET | `/api/documentos` | RBAC `DOC_READ` + ABAC |
+| GET | `/api/documentos/:id` | RBAC `DOC_READ` + ABAC |
+| POST | `/api/documentos` | RBAC `DOC_CREATE` + ABAC |
+| PUT | `/api/documentos/:id` | RBAC `DOC_UPDATE` + ABAC |
+| DELETE | `/api/documentos/:id` | RBAC `DOC_DELETE` + ABAC |
+| POST | `/api/documentos/:id/aprobar` | RBAC `DOC_APPROVE` + ABAC |
+| GET | `/api/auditoria` | RBAC `AUDIT_READ` |
+
+## Casos de prueba obligatorios
+
+La vista **Test suite** del frontend contiene los 12 escenarios solicitados: acceso por departamento, aprobación por Supervisor, denegación RBAC, nivel insuficiente, Gerente eliminando, Auditor modificando, usuario inactivo, horario, dispositivo personal e invitados.
+
+Las evidencias pueden obtenerse desde el frontend o consultando:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:4000/api/auditoria" -Headers @{ Authorization = "Bearer <TOKEN>" }
+```
+
+## Entregables del laboratorio
+
+Este repositorio contiene el código fuente, README, esquema SQL, seed de datos, arquitectura separada por módulos RBAC/ABAC y la interfaz de demostración. Para completar la entrega académica deben anexarse también el diagrama exportado, evidencias/capturas de los casos y el video de funcionamiento.
+
+### Frontend SecureDocs
+
+En otra terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+La interfaz estará disponible en `http://localhost:5173`. Por defecto consume la API en
+`http://localhost:4000/api`; para usar otro puerto, define `VITE_API_URL`, por ejemplo:
+
+```powershell
+$env:VITE_API_URL = "http://localhost:4001/api"
+npm run dev
+```
+
+El frontend incluye accesos demo para los seis roles, navegación condicionada por RBAC,
+simulador de país/dispositivo/hora que inyecta cabeceras ABAC, decodificador visual de
+políticas, documentos, usuarios, auditoría y la matriz de los 12 casos obligatorios.

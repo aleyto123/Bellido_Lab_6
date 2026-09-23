@@ -96,14 +96,14 @@ export const abacRules: PolicyRule[] = [
   {
     id: 'POL_006',
     nombre: 'Dispositivo Corporativo Requerido',
-    descripcion: 'Documentos nivel 5 exigen acceso desde un dispositivo corporativo.',
+    descripcion: 'Documentos nivel 4 o 5 exigen acceso desde un dispositivo corporativo.',
     evaluate: (user, document, env) => {
-      if (document.nivel_confidencialidad < 5) return { passed: true };
+      if (document.nivel_confidencialidad < 4) return { passed: true };
 
       const passed = env.dispositivo === 'CORPORATIVO';
       return {
         passed,
-        reason: passed ? undefined : 'Documento nivel 5 requiere un dispositivo CORPORATIVO'
+        reason: passed ? undefined : 'Documento nivel 4 o 5 requiere un dispositivo CORPORATIVO'
       };
     }
   },

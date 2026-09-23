@@ -42,10 +42,12 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS documentos (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT,
     id_departamento INT REFERENCES departamentos(id),
     nivel_confidencialidad INT NOT NULL CHECK (nivel_confidencialidad BETWEEN 1 AND 5),
     estado VARCHAR(20) DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'PUBLICADO', 'RECHAZADO')),
     pais VARCHAR(50) NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     propietario_id INT REFERENCES usuarios(id)
 );
 
