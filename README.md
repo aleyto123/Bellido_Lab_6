@@ -1,5 +1,8 @@
 # SecureDocs: Control de acceso RBAC + ABAC
 
+**Estudiante:** Bellido Rony  
+**Curso:** Desarrollo de Soluciones en la Nube
+
 SecureDocs es un sistema de gestión de documentos internos para TechCorp. Su autorización se evalúa en dos capas:
 
 1. **RBAC:** determina si el rol posee el permiso base para ejecutar una operación.
