@@ -27,6 +27,9 @@ El acceso solo se autoriza cuando ambas capas permiten la operación. Cada solic
 El diagrama completo de arquitectura y el flujo de autorización se encuentra en [ARQUITECTURA.md](ARQUITECTURA.md).
 El modelo entidad-relación y la descripción de las tablas se encuentra en [MODELO_DATOS.md](MODELO_DATOS.md).
 La matriz de roles y permisos RBAC se encuentra en [MATRIZ_RBAC.md](MATRIZ_RBAC.md).
+Las evidencias reproducibles de los casos de prueba se encuentran en [EVIDENCIAS_PRUEBAS.md](EVIDENCIAS_PRUEBAS.md).
+El registro de auditoría y su procedimiento de demostración se encuentra en [REGISTRO_AUDITORIA.md](REGISTRO_AUDITORIA.md).
+El guion del video o demostración se encuentra en [GUIA_VIDEO_DEMO.md](GUIA_VIDEO_DEMO.md).
 
 ```text
 Frontend React
